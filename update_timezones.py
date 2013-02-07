@@ -36,7 +36,7 @@ for file in files:
 			print '	Writing new entry at %s'%(filename)
 			plistlib.writePlist(entry,filename)
 		else:
-			'	Not doing anything because backup already exists at %s'%backupfilename
+			print '	Not doing anything because backup already exists at %s'%backupfilename
 		print ''
 
 print 'Done.'

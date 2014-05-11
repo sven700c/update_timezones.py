@@ -14,9 +14,13 @@
 import os
 import plistlib
 import shutil
+import glob
+
+config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
+dayone_conf = plistlib.readPlist(glob.glob(os.path.expanduser(config_path))[0])
+base_dir = str(dayone_conf['JournalPackageURL'] + '/entries')
 
 timezone = 'Asia/Tokyo'
-base_dir = '/Volumes/EXTERNAL/Dropbox/Apps/Day One/Journal.dayone/entries'
 
 files = os.listdir(base_dir)
 files[:] = [file for file in files if file.endswith('.doentry')]

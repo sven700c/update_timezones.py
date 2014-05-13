@@ -12,9 +12,12 @@
 # something goes wrong
 
 import os
+import sys
+import argparse
 import plistlib
 import shutil
 import glob
+
 
 def write_file(filename, entry):
     backupfilename = filename + '.tzbak'
@@ -27,16 +30,22 @@ def write_file(filename, entry):
         print '	No write because backup already exists at %s' % backupfilename
     print ''
 
-def check_timezone(filename, entry):
+
+def check_timezone(entry):
     timezone = 'Asia/Tokyo'
     tz = entry['Time Zone']
     country = entry['Location']['Country']
     if country == 'Japan' and tz != timezone:
         print 'Wrong timezone %s for location %s in entry %s' % (tz, country, entry['UUID'])
         entry['Time Zone'] = timezone
-        write_file(filename, entry)
+        return entry
 
-def main():
+
+def main(argv):
+    args = argparse.ArgumentParser()
+    args.add_argument('-n', '--nowrite', action='store_true')
+    flag = args.parse_args()
+
     config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
     dayone_conf = plistlib.readPlist(glob.glob(os.path.expanduser(config_path))[0])
     base_dir = str(dayone_conf['JournalPackageURL'] + '/entries')
@@ -47,9 +56,11 @@ def main():
     for file in files:
         filename = os.path.join(base_dir, file)
         entry = plistlib.readPlist(filename)
-        check_timezone(filename, entry)
+        update = check_timezone(entry)
+        if update and not flag.nowrite:
+            write_file(filename, update)
 
     print 'Done.'
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)

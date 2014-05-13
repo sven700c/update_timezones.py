@@ -27,12 +27,19 @@ def write_file(filename, entry):
         print '	No write because backup already exists at %s' % backupfilename
     print ''
 
+def check_timezone(filename, entry):
+    timezone = 'Asia/Tokyo'
+    tz = entry['Time Zone']
+    country = entry['Location']['Country']
+    if country == 'Japan' and tz != timezone:
+        print 'Wrong timezone %s for location %s in entry %s' % (tz, country, entry['UUID'])
+        entry['Time Zone'] = timezone
+        write_file(filename, entry)
+
 def main():
     config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
     dayone_conf = plistlib.readPlist(glob.glob(os.path.expanduser(config_path))[0])
     base_dir = str(dayone_conf['JournalPackageURL'] + '/entries')
-
-    timezone = 'Asia/Tokyo'
 
     files = os.listdir(base_dir)
     files[:] = [file for file in files if file.endswith('.doentry')]
@@ -40,14 +47,7 @@ def main():
     for file in files:
         filename = os.path.join(base_dir, file)
         entry = plistlib.readPlist(filename)
-        tz = entry['Time Zone']
-        country = entry['Location']['Country']
-
-        if country == 'Japan':
-            if tz != timezone:
-                print 'Wrong timezone %s for location %s in entry %s' % (tz, country, entry['UUID'])
-                entry['Time Zone'] = timezone
-                write_file(filename, entry)
+        check_timezone(filename, entry)
 
     print 'Done.'
 

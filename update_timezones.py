@@ -16,7 +16,7 @@ import plistlib
 import shutil
 import glob
 
-def write_file(filename):
+def write_file(filename, entry):
     backupfilename = filename + '.tzbak'
     if not os.path.exists(backupfilename):
         print '	Backing up %s to %s' % (filename, backupfilename)
@@ -47,7 +47,7 @@ def main():
             if tz != timezone:
                 print 'Wrong timezone %s for location %s in entry %s' % (tz, country, entry['UUID'])
                 entry['Time Zone'] = timezone
-                write_file(filename)
+                write_file(filename, entry)
 
     print 'Done.'
 

@@ -11,19 +11,19 @@
 # NOTE: It is probably a good idea to have a full journal backup just in case
 # something goes wrong
 
-import os
-import sys
+from os import path, listdir
+from sys import argv
 import argparse
 import plistlib
-import shutil
+from shutil import move
 import glob
 
 
 def write_file(filename, entry):
     backupfilename = filename + '.tzbak'
-    if not os.path.exists(backupfilename):
+    if not path.exists(backupfilename):
         print '	Backing up %s to %s' % (filename, backupfilename)
-        shutil.move(filename, backupfilename)
+        move(filename, backupfilename)
         print '	Writing new entry at %s' % filename
         plistlib.writePlist(entry, filename)
     else:
@@ -43,18 +43,22 @@ def check_timezone(entry):
 
 def main(argv):
     args = argparse.ArgumentParser()
-    args.add_argument('-n', '--nowrite', action='store_true')
+    args.add_argument('-n', '--nowrite', action='store_true', help='dry run')
+    args.add_argument('-p', '--path', help='override default journal entries path')
     flag = args.parse_args()
 
-    config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
-    dayone_conf = plistlib.readPlist(glob.glob(os.path.expanduser(config_path))[0])
-    base_dir = str(dayone_conf['JournalPackageURL'] + '/entries')
+    if flag.path:
+        base_dir = flag.path
+    else:
+        config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
+        dayone_conf = plistlib.readPlist(glob.glob(path.expanduser(config_path))[0])
+        base_dir = str(dayone_conf['JournalPackageURL'] + '/entries')
 
-    files = os.listdir(base_dir)
+    files = listdir(base_dir)
     files[:] = [file for file in files if file.endswith('.doentry')]
 
     for file in files:
-        filename = os.path.join(base_dir, file)
+        filename = path.join(base_dir, file)
         entry = plistlib.readPlist(filename)
         update = check_timezone(entry)
         if update and not flag.nowrite:
@@ -63,4 +67,4 @@ def main(argv):
     print 'Done.'
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main(argv)

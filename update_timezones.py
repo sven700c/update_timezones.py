@@ -20,14 +20,14 @@ import glob
 
 
 def write_file(filename, entry):
-    backupfilename = filename + '.tzbak'
-    if not path.exists(backupfilename):
-        print '	Backing up %s to %s' % (filename, backupfilename)
-        move(filename, backupfilename)
+    backup_filename = filename + '.tzbak'
+    if not path.exists(backup_filename):
+        print '	Backing up %s to %s' % (filename, backup_filename)
+        move(filename, backup_filename)
         print '	Writing new entry at %s' % filename
         plistlib.writePlist(entry, filename)
     else:
-        print '	No write because backup already exists at %s' % backupfilename
+        print '	No write because backup already exists at %s' % backup_filename
     print ''
 
 
@@ -45,10 +45,14 @@ def main(argv):
     args = argparse.ArgumentParser()
     args.add_argument('-n', '--nowrite', action='store_true', help='dry run')
     args.add_argument('-p', '--path', help='override default journal entries path')
+    args.add_argument('-l', '--location', help='country for which to check timezone entries')
     flag = args.parse_args()
 
     if flag.path:
-        base_dir = flag.path
+        if os.path.exists(flag.path):
+            base_dir = flag.path
+        else:
+            print("path does not exist")
     else:
         config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
         dayone_conf = plistlib.readPlist(glob.glob(path.expanduser(config_path))[0])

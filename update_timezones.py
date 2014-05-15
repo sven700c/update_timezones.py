@@ -31,13 +31,20 @@ def write_file(filename, entry):
     print ''
 
 
-def check_timezone(entry):
-    timezone = 'Asia/Tokyo'
+def check_timezone(entry, location):
+    tz_dict = {
+        'Japan': 'Asia/Tokyo',
+        'Singapore': 'Asia/Singapore',
+        'Switzerland': 'Europe/Zurich'
+    }
+
+    timezone = tz_dict[location]
     tz = entry['Time Zone']
     country = entry['Location']['Country']
-    if country == 'Japan' and tz != timezone:
+    if country == location and tz != timezone:
         print 'Wrong timezone %s for location %s in entry %s' % (tz, country, entry['UUID'])
         entry['Time Zone'] = timezone
+        entry['Starred'] = 'true'
         return entry
 
 
@@ -45,14 +52,15 @@ def main(argv):
     args = argparse.ArgumentParser()
     args.add_argument('-n', '--nowrite', action='store_true', help='dry run')
     args.add_argument('-p', '--path', help='override default journal entries path')
-    args.add_argument('-l', '--location', help='country for which to check timezone entries')
+    args.add_argument('-l', '--location', help='country for which to check timezone entries', default='Japan')
     flag = args.parse_args()
 
     if flag.path:
-        if os.path.exists(flag.path):
-            base_dir = flag.path
+        if path.exists(flag.path):
+            base_dir = path.expanduser(flag.path)
         else:
             print("path does not exist")
+            exit()
     else:
         config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
         dayone_conf = plistlib.readPlist(glob.glob(path.expanduser(config_path))[0])
@@ -64,7 +72,7 @@ def main(argv):
     for file in files:
         filename = path.join(base_dir, file)
         entry = plistlib.readPlist(filename)
-        update = check_timezone(entry)
+        update = check_timezone(entry, flag.location)
         if update and not flag.nowrite:
             write_file(filename, update)
 

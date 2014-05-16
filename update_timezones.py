@@ -53,6 +53,7 @@ def main(argv):
     args.add_argument('-n', '--nowrite', action='store_true', help='dry run')
     args.add_argument('-p', '--path', help='override default journal entries path')
     args.add_argument('-l', '--location', help='country for which to check timezone entries', default='Japan')
+    args.add_argument('-e', '--entry', help='print out single entry')
     flag = args.parse_args()
 
     if flag.path:
@@ -66,15 +67,20 @@ def main(argv):
         dayone_conf = plistlib.readPlist(glob.glob(path.expanduser(config_path))[0])
         base_dir = str(dayone_conf['JournalPackageURL'] + '/entries')
 
-    files = listdir(base_dir)
-    files[:] = [file for file in files if file.endswith('.doentry')]
+    if flag.entry:
+        filename = path.join(base_dir, str(flag.entry + '.doentry'))
+        print(plistlib.readPlist(filename))
 
-    for file in files:
-        filename = path.join(base_dir, file)
-        entry = plistlib.readPlist(filename)
-        update = check_timezone(entry, flag.location)
-        if update and not flag.nowrite:
-            write_file(filename, update)
+    else:
+        files = listdir(base_dir)
+        files[:] = [file for file in files if file.endswith('.doentry')]
+
+        for file in files:
+            filename = path.join(base_dir, file)
+            entry = plistlib.readPlist(filename)
+            update = check_timezone(entry, flag.location)
+            if update and not flag.nowrite:
+                write_file(filename, update)
 
     print 'Done.'
 

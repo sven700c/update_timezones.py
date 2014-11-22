@@ -47,6 +47,10 @@ def check_timezone(entry, location):
         entry['Starred'] = 'true'
         return entry
 
+def default_dir():
+    config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
+    dayone_conf = plistlib.readPlist(glob.glob(path.expanduser(config_path))[0])
+    return str(dayone_conf['JournalPackageURL'] + '/entries')
 
 def main(argv):
     args = argparse.ArgumentParser()
@@ -56,16 +60,14 @@ def main(argv):
     args.add_argument('-e', '--entry', help='print out single entry')
     flag = args.parse_args()
 
+    base_dir = default_dir()
+
     if flag.path:
         if path.exists(flag.path):
             base_dir = path.expanduser(flag.path)
         else:
             print("path does not exist")
             exit()
-    else:
-        config_path = '~/Library/Group Containers/*.dayoneapp/data/Preferences/dayone.plist'
-        dayone_conf = plistlib.readPlist(glob.glob(path.expanduser(config_path))[0])
-        base_dir = str(dayone_conf['JournalPackageURL'] + '/entries')
 
     if flag.entry:
         filename = path.join(base_dir, str(flag.entry + '.doentry'))
